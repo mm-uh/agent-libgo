@@ -1,0 +1,246 @@
+openapi: 3.0.1
+info:
+  contact:
+    email: agentPlatform@grs.uh.cu
+    name: Agent Platform UH Team
+  description: This is a specification for openapi using
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  title: Agent Platform
+  version: 1.0.0
+servers:
+- url: http://agentplatform.grs.uh.cu/api/v1
+paths:
+  /getSimilarAgents/{Name}:
+    get:
+      description: Get the agents that are similars to the agent passed as paramerter
+      operationId: getSimilarAgent
+      parameters:
+      - description: Name of the Agent
+        in: path
+        name: Name
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Agent'
+          description: Get the agent that are similar
+        default:
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+  /getAgentsForFunction/{Name}:
+    get:
+      description: Get the agents that match with the function name passed as params
+      operationId: getAgentsByFunction
+      parameters:
+      - description: Name of the Function
+        in: path
+        name: Name
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          content:
+            '*/*':
+              schema:
+                items:
+                  items:
+                    $ref: '#/components/schemas/Addr'
+                  maxItems: 3
+                  type: array
+                type: array
+          description: |
+            Get the agents endpoints([3]Addr) that represent the active agents that
+            follow the function name
+        default:
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+  /getAllAgentsNames:
+    get:
+      description: |
+        Get all agents names registered in the platforms
+      operationId: getAgentsNames
+      responses:
+        200:
+          content:
+            '*/*':
+              schema:
+                items:
+                  type: string
+                type: array
+          description: get all Agents
+        default:
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+  /getPeers:
+    get:
+      description: |
+        Return all peers connected to the platform network
+      operationId: getPeers
+      responses:
+        200:
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/Addr'
+                type: array
+          description: get Peers response
+        default:
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+  /registerAgent:
+    post:
+      description: Register a new Agent in the platform
+      operationId: registerAgent
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/Agent'
+        description: Agent to register
+        required: true
+      responses:
+        200:
+          content: {}
+          description: Agent registered
+        default:
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+      x-codegen-request-body-name: body
+  /getAgent/{Name}:
+    get:
+      description: Get the agent that follow a simple criteria
+      operationId: getAgent
+      parameters:
+      - description: Name of the Agent
+        in: path
+        name: Name
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/Addr'
+                type: array
+          description: |
+            Response Should contain 3 Addr
+            Response[0] Agent Addr
+            Response[1] Agent Is Alive endpoint Addr
+            Response[2] Agent Documentation Addr
+        default:
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+components:
+  schemas:
+    Addr:
+      example:
+        Ip: Ip
+        Port: 0
+      properties:
+        Ip:
+          type: string
+        Port:
+          format: int64
+          type: integer
+      required:
+      - Ip
+      - Port
+      type: object
+    Agent:
+      example:
+        Function: Function
+        TestCases:
+        - Input: Input
+          Output: Output
+        - Input: Input
+          Output: Output
+        Documentation:
+          key:
+            Ip: Ip
+            Port: 0
+        EndpointService:
+        - Ip: Ip
+          Port: 0
+        - Ip: Ip
+          Port: 0
+        IsAliveService:
+          key:
+            Ip: Ip
+            Port: 0
+        Name: Name
+      properties:
+        Name:
+          type: string
+        Function:
+          type: string
+        EndpointService:
+          items:
+            $ref: '#/components/schemas/Addr'
+          type: array
+        IsAliveService:
+          additionalProperties:
+            $ref: '#/components/schemas/Addr'
+          type: object
+        Documentation:
+          additionalProperties:
+            $ref: '#/components/schemas/Addr'
+          type: object
+        TestCases:
+          items:
+            $ref: '#/components/schemas/TestCase'
+          type: array
+      type: object
+    Error:
+      properties:
+        code:
+          format: int32
+          type: integer
+        message:
+          type: string
+      required:
+      - code
+      - message
+      type: object
+    TestCase:
+      example:
+        Input: Input
+        Output: Output
+      properties:
+        Input:
+          type: string
+        Output:
+          type: string
+      required:
+      - Input
+      - Output
+      type: object
+x-components: {}
