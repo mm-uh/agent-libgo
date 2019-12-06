@@ -31,7 +31,7 @@ func NewAgentWrapper(agentName string, addresses []src.Addr) *AgentWrapper {
 }
 
 func (agent *AgentWrapper) SendToAgent(wrapper *PlatformWrapper, request string) (string, error) {
-	if !agent.refreshAgent(wrapper) {
+	if !agent.refreshAgent(wrapper, false) {
 		return "", nil
 	}
 
@@ -52,7 +52,7 @@ func (agent *AgentWrapper) IsAlive(wrapper *PlatformWrapper) bool {
 }
 
 func (agent *AgentWrapper) GetDocumentation(wrapper *PlatformWrapper) (string, error) {
-	if !agent.refreshAgent(wrapper) {
+	if !agent.refreshAgent(wrapper, false) {
 		return "", nil
 	}
 
@@ -188,6 +188,20 @@ func (wrapper *PlatformWrapper) GetAgent(agentName string) (*AgentWrapper, error
 		return &AgentWrapper{}, err
 	}
 	agent, _, err := wrapper.ApiClient.DefaultApi.GetAgent(context.Background(), agentName)
+	if err != nil {
+		return &AgentWrapper{}, err
+	}
+	return NewAgentWrapper(agentName, agent), nil
+}
+
+func (wrapper *PlatformWrapper) GetSimilar(agentName string) (*AgentWrapper, error) {
+	defer context.Background()
+
+	err := wrapper.UpdateApi()
+	if err != nil {
+		return &AgentWrapper{}, err
+	}
+	agent, _, err := wrapper.ApiClient.DefaultApi.GetSimilarAgent(context.Background(), agentName)
 	if err != nil {
 		return &AgentWrapper{}, err
 	}

@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-func launchServer(ip string, port string, function func(string2 string) (string, error)) {
+func LaunchServer(ip string, port string, function func(string2 string) (string, error)) {
 
 	fmt.Println("Launching server...")
 
@@ -62,7 +62,7 @@ func main() {
 		},
 	}
 	// Handler for agent
-	go launchServer("localhost", "38090", func(message string) (string, error) {
+	go LaunchServer("localhost", "38090", func(message string) (string, error) {
 		message = message[:len(message)-1]
 		args := strings.Split(message, " ")
 		if len(args) != 2 {
@@ -79,13 +79,13 @@ func main() {
 		return strconv.Itoa(a + b), nil
 	})
 	// Handler for IsAlive service
-	go launchServer("localhost", "38091", func(message string) (string, error) {
+	go LaunchServer("localhost", "38091", func(message string) (string, error) {
 		if message != "IsAlive?\n" {
 			return "", errors.New("unknown param, not \"IsAlive?\"")
 		}
 		return "Yes", nil
 	})
-	go launchServer("localhost", "38092", func(message string) (string, error) {
+	go LaunchServer("localhost", "38092", func(message string) (string, error) {
 		args := strings.Split(message, " ")
 		if len(args) != 2 {
 			return "", errors.New("unknown number of params")
