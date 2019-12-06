@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/mm-uh/agent-libgo/src"
+	platform "github.com/mm-uh/go-agent-platform/src"
 	"github.com/sirupsen/logrus"
 	"math/rand"
 	"net"
@@ -11,20 +12,68 @@ import (
 )
 
 type AgentWrapper struct {
-	Node          src.Addr
-	IsAlive       src.Addr
-	Documentation src.Addr
+	Name              string
+	NodeAddr          src.Addr
+	IsAliveAddr       src.Addr
+	DocumentationAddr src.Addr
 }
 
-func NewAgentWrapper(addresses []src.Addr) *AgentWrapper {
+func NewAgentWrapper(agentName string, addresses []src.Addr) *AgentWrapper {
 	if len(addresses) != 3 {
 		return &AgentWrapper{}
 	}
 	return &AgentWrapper{
-		Node:          addresses[0],
-		IsAlive:       addresses[1],
-		Documentation: addresses[2],
+		Name:              agentName,
+		NodeAddr:          addresses[0],
+		IsAliveAddr:       addresses[1],
+		DocumentationAddr: addresses[2],
 	}
+}
+
+func (agent *AgentWrapper) SendToAgent(wrapper *PlatformWrapper, request string) (string, error) {
+	if !agent.refreshAgent(wrapper) {
+		return "", nil
+	}
+
+	response, err := platform.MakeRequest(getEndpoint(agent.NodeAddr, 0), request)
+	if err != nil {
+		return "", nil
+	}
+	return response, nil
+}
+
+func getEndpoint(addr src.Addr, plus int) string {
+	port := strconv.Itoa(int(addr.Port) + plus)
+	return addr.Ip + port
+}
+
+func (agent *AgentWrapper) IsAlive(wrapper *PlatformWrapper) bool {
+	return platform.NodeIsAlive(getEndpoint(agent.IsAliveAddr, 0))
+}
+
+func (agent *AgentWrapper) GetDocumentation(wrapper *PlatformWrapper) (string, error) {
+	if !agent.refreshAgent(wrapper) {
+		return "", nil
+	}
+
+	response, err := platform.MakeRequest(getEndpoint(agent.DocumentationAddr, 0), "Doc")
+	if err != nil {
+		return "", nil
+	}
+	return response, nil
+}
+
+func (agent *AgentWrapper) refreshAgent(wrapper *PlatformWrapper, forced bool) bool {
+	port := strconv.Itoa(int(agent.IsAliveAddr.Port))
+	if isOpen(agent.IsAliveAddr.Ip, port) && !forced {
+		return true
+	}
+	tmpAgent, err := wrapper.GetAgent(agent.Name)
+	if err != nil {
+		return false
+	}
+	*agent = *tmpAgent
+	return true
 }
 
 type PlatformWrapper struct {
@@ -45,7 +94,7 @@ func NewPlatformWWrapper(host, port string) *PlatformWrapper {
 	config.BasePath = "http://" + host + ":" + port + "/api/v1"
 	wrapper.ApiClient = src.NewAPIClient(config)
 
-	_ = wrapper.getPeers()
+	_ = wrapper.GetPeers()
 
 	return &wrapper
 }
@@ -63,7 +112,7 @@ func Union(a, b []src.Addr) []src.Addr {
 	}
 	return a
 }
-func (wrapper *PlatformWrapper) getPeers() error {
+func (wrapper *PlatformWrapper) GetPeers() error {
 
 	defer context.Background()
 
@@ -74,7 +123,7 @@ func (wrapper *PlatformWrapper) getPeers() error {
 	}
 	wrapper.KnowPeers = Union(wrapper.KnowPeers, tmpPeers)
 
-	err = wrapper.updatePeers()
+	err = wrapper.UpdatePeers()
 	if err != nil {
 		logrus.Warn("Could't update peers")
 		return err
@@ -83,7 +132,7 @@ func (wrapper *PlatformWrapper) getPeers() error {
 	return nil
 }
 
-func (wrapper *PlatformWrapper) updatePeers() error {
+func (wrapper *PlatformWrapper) UpdatePeers() error {
 	defer context.Background()
 
 	if len(wrapper.KnowPeers) < 1 {
@@ -109,8 +158,8 @@ func (wrapper *PlatformWrapper) updatePeers() error {
 	return nil
 }
 
-func (wrapper *PlatformWrapper) updateApi() error {
-	_ = wrapper.getPeers()
+func (wrapper *PlatformWrapper) UpdateApi() error {
+	_ = wrapper.GetPeers()
 
 	if !isOpen(wrapper.Host, wrapper.Port) {
 		for _, node := range wrapper.KnowPeers {
@@ -131,10 +180,10 @@ func (wrapper *PlatformWrapper) updateApi() error {
 	return nil
 }
 
-func (wrapper *PlatformWrapper) getAgent(agentName string) (*AgentWrapper, error) {
+func (wrapper *PlatformWrapper) GetAgent(agentName string) (*AgentWrapper, error) {
 	defer context.Background()
 
-	err := wrapper.updateApi()
+	err := wrapper.UpdateApi()
 	if err != nil {
 		return &AgentWrapper{}, err
 	}
@@ -142,13 +191,13 @@ func (wrapper *PlatformWrapper) getAgent(agentName string) (*AgentWrapper, error
 	if err != nil {
 		return &AgentWrapper{}, err
 	}
-	return NewAgentWrapper(agent), nil
+	return NewAgentWrapper(agentName, agent), nil
 }
 
-func (wrapper *PlatformWrapper) registerAgent(agent *src.Agent) error {
+func (wrapper *PlatformWrapper) RegisterAgent(agent *src.Agent) error {
 	defer context.Background()
 
-	err := wrapper.updateApi()
+	err := wrapper.UpdateApi()
 	if err != nil {
 		return err
 	}
@@ -159,10 +208,10 @@ func (wrapper *PlatformWrapper) registerAgent(agent *src.Agent) error {
 	return nil
 }
 
-func (wrapper *PlatformWrapper) getAllAgents() ([]string, error) {
+func (wrapper *PlatformWrapper) GetAllAgents() ([]string, error) {
 	defer context.Background()
 
-	err := wrapper.updateApi()
+	err := wrapper.UpdateApi()
 	if err != nil {
 		return nil, err
 	}
