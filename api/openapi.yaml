@@ -28,7 +28,9 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/Agent'
+                items:
+                  type: string
+                type: array
           description: Get the agent that are similar
         default:
           content:
@@ -129,6 +131,28 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: unexpected error
       x-codegen-request-body-name: body
+  /editAgent:
+    post:
+      description: Edit a registered Agent in the platform
+      operationId: editAgent
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/Agent'
+        description: Agent to edit
+        required: true
+      responses:
+        200:
+          content: {}
+          description: Agent edited
+        default:
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+      x-codegen-request-body-name: body
   /getAgent/{Name}:
     get:
       description: Get the agent that follow a simple criteria
@@ -197,10 +221,13 @@ components:
             Ip: Ip
             Port: 0
         Name: Name
+        Password: Password
       properties:
         Name:
           type: string
         Function:
+          type: string
+        Password:
           type: string
         EndpointService:
           items:

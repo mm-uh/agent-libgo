@@ -4,6 +4,7 @@ All URIs are relative to *http://agentplatform.grs.uh.cu/api/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**EditAgent**](DefaultApi.md#EditAgent) | **Post** /editAgent | 
 [**GetAgent**](DefaultApi.md#GetAgent) | **Get** /getAgent/{Name} | 
 [**GetAgentsByFunction**](DefaultApi.md#GetAgentsByFunction) | **Get** /getAgentsForFunction/{Name} | 
 [**GetAgentsNames**](DefaultApi.md#GetAgentsNames) | **Get** /getAllAgentsNames | 
@@ -11,6 +12,40 @@ Method | HTTP request | Description
 [**GetSimilarAgent**](DefaultApi.md#GetSimilarAgent) | **Get** /getSimilarAgents/{Name} | 
 [**RegisterAgent**](DefaultApi.md#RegisterAgent) | **Post** /registerAgent | 
 
+
+
+## EditAgent
+
+> EditAgent(ctx, body)
+
+
+
+Edit a registered Agent in the platform
+
+### Required Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**body** | [**Agent**](Agent.md)| Agent to edit | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: */*
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
 
 ## GetAgent
@@ -143,7 +178,7 @@ No authorization required
 
 ## GetSimilarAgent
 
-> Agent GetSimilarAgent(ctx, name)
+> []string GetSimilarAgent(ctx, name)
 
 
 
@@ -159,7 +194,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**Agent**](Agent.md)
+**[]string**
 
 ### Authorization
 

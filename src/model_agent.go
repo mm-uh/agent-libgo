@@ -11,10 +11,11 @@
 package src
 // Agent struct for Agent
 type Agent struct {
-	Name string                    `json:"Name,omitempty"`
-	Function string                `json:"Function,omitempty"`
-	EndpointService []Addr         `json:"EndpointService,omitempty"`
+	Name string `json:"Name,omitempty"`
+	Function string `json:"Function,omitempty"`
+	Password string `json:"Password,omitempty"`
+	EndpointService []Addr `json:"EndpointService,omitempty"`
 	IsAliveService map[string]Addr `json:"IsAliveService,omitempty"`
-	Documentation map[string]Addr  `json:"Documentation,omitempty"`
-	TestCases []TestCase           `json:"TestCases,omitempty"`
+	Documentation map[string]Addr `json:"Documentation,omitempty"`
+	TestCases []TestCase `json:"TestCases,omitempty"`
 }

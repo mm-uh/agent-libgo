@@ -6,6 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Name** | **string** |  | [optional] 
 **Function** | **string** |  | [optional] 
+**Password** | **string** |  | [optional] 
 **EndpointService** | [**[]Addr**](Addr.md) |  | [optional] 
 **IsAliveService** | [**map[string]Addr**](Addr.md) |  | [optional] 
 **Documentation** | [**map[string]Addr**](Addr.md) |  | [optional] 
