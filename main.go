@@ -63,6 +63,7 @@ func main() {
 	}
 	// Handler for agent
 	go launchServer("localhost", "38090", func(message string) (string, error) {
+		message = message[:len(message)-1]
 		args := strings.Split(message, " ")
 		if len(args) != 2 {
 			return "", errors.New("unknown number of params")
